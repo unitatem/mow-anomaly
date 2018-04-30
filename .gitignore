@@ -4,6 +4,10 @@
 # JetBrains
 .idea
 
+# RStudio
+*.Rproj
+.Rproj.user
+
 # Project
 resources
 
