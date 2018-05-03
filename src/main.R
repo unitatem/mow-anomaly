@@ -13,7 +13,7 @@ data = read_csv_file(creadit_card_10k)
 print(head(data, 3))
 message("Rate of frauds: ", sum(data$Class) / nrow(data))
 
-# first column is ID, second column is transaction time
+# first column is ID, second column is transaction time, last column is class
 data_x = data[,3:(ncol(data) - 1)]
 data_y = data[,ncol(data)]
 
@@ -59,7 +59,7 @@ independent_probability = function(data, means, std) {
     return(result)
 }
 
-fast_log = function(prob, name = "") {
+print_atributes_parameters= function(prob, name = "") {
     message(name)
     message("min :", min(prob))
     message("max :", max(prob))
@@ -68,10 +68,38 @@ fast_log = function(prob, name = "") {
 }
 
 prob_safe = independent_probability(data_safe, means, deviations)
-fast_log(prob_safe, "safe")
+print_atributes_parameters(prob_safe, "safe")
 prob_fraud = independent_probability(data_fraud, means, deviations)
-fast_log(prob_fraud, "fraud")
+print_atributes_parameters(prob_fraud, "fraud")
+
+model = kmeans(data_safe, 10)
+
+get_cluster_parameters = function(data, model) {
+    centers = model$centers
+    distance = matrix()
+    for (i in 1:nrow(model$centers))
+        distance[i] = mean(dist(data[model$cluster == i,]))
+
+    df = list(centers = centers, distance = distance)
+    return(df)
+}
+
+clusters_param = get_cluster_parameters(data_safe, model)
+
+record_in_known_clusters = function(element, params) {
+    for (i in 1:nrow(params$centers)) {
+        distance = dist(rbind(element, params$centers[i,]))
+        if (distance <= params$distance[i])
+            return(TRUE)
+    }
+    return(FALSE)
+}
+
+detected_anomaly = 1:nrow(data_fraud)
+for (i in 1:nrow(data_fraud)) {
+    detected_anomaly[i] = (record_in_known_clusters(data_fraud[i,], clusters_param) == FALSE)
+}
+
+message("Detected anomaly ", sum(detected_anomaly), " out of ", nrow(data_fraud))
 
 message("END")
-
-# kmeans_model = kmeans(data_safe, 1)
