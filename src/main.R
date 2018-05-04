@@ -5,7 +5,7 @@ read_csv_file = function(path) {
     return(data)
 }
 
-extract_noraml_anomaly = function(mixed_data) {
+extract_normal_anomaly = function(mixed_data) {
     # first column is ID, second column is transaction time, last column is class
     idx_col = 3:(ncol(mixed_data) - 1)
 
@@ -31,7 +31,7 @@ extract_training_test = function(normal_anomaly) {
     data_training = list(normal = normal_anomaly$normal[idx_normal_2_training, ])
 
     data_test = list(normal = normal_anomaly$normal[idx_normal_2_test,],
-                     anoamaly = normal_anomaly$anomaly)
+                     anomaly = normal_anomaly$anomaly)
 
     result = list(training = data_training, test = data_test)
     return(result)
@@ -57,17 +57,17 @@ record_in_known_clusters = function(element, params) {
 }
 
 calculate_success = function(data_test, clusters_param) {
-    correct_decition = list(true_anomaly = 0, true_normal = 0)
+    correct_decision = list(true_anomaly = 0, true_normal = 0)
 
-    for (i in 1:nrow(data_test$anoamaly))
-        correct_decition$true_anomaly = correct_decition$true_anomaly + (record_in_known_clusters(data_test$anoamaly[i,], clusters_param) == FALSE)
-    correct_decition$true_anomaly = correct_decition$true_anomaly / nrow(data_test$anoamaly)
+    for (i in 1:nrow(data_test$anomaly))
+        correct_decision$true_anomaly = correct_decision$true_anomaly + (record_in_known_clusters(data_test$anomaly[i,], clusters_param) == FALSE)
+    correct_decision$true_anomaly = correct_decision$true_anomaly / nrow(data_test$anomaly)
 
     for (i in 1:nrow(data_test$normal))
-        correct_decition$true_normal = correct_decition$true_normal + (record_in_known_clusters(data_test$normal[i, ], clusters_param) == TRUE)
-    correct_decition$true_normal = correct_decition$true_normal / nrow(data_test$normal)
+        correct_decision$true_normal = correct_decision$true_normal + (record_in_known_clusters(data_test$normal[i, ], clusters_param) == TRUE)
+    correct_decision$true_normal = correct_decision$true_normal / nrow(data_test$normal)
 
-    return(correct_decition)
+    return(correct_decision)
 }
 
 message("START")
@@ -77,7 +77,7 @@ source("src/config.R")
 data_raw = read_csv_file(creadit_card_10k)
 print(head(data_raw, 3))
 
-normal_anomaly = extract_noraml_anomaly(data_raw)
+normal_anomaly = extract_normal_anomaly(data_raw)
 
 message("Number of anomaliess: ", nrow(normal_anomaly$anomaly))
 message("Number of normal: ", nrow(normal_anomaly$normal))
