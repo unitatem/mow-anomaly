@@ -1,3 +1,5 @@
+source("src/grouping_wrapper.R")
+
 read_csv_file = function(path) {
     data = read.csv(file = path,
                     header = TRUE,
@@ -56,42 +58,58 @@ record_in_known_clusters = function(element, params) {
     return(FALSE)
 }
 
-calculate_success = function(data_test, clusters_param) {
-    correct_decision = list(true_anomaly = 0, true_normal = 0)
+# calculate_success = function(data_test, clusters_param) {
+#     correct_decision = list(true_anomaly = 0, true_normal = 0)
+# 
+#     for (i in 1:nrow(data_test$anomaly))
+#         correct_decision$true_anomaly = correct_decision$true_anomaly + (record_in_known_clusters(data_test$anomaly[i,], clusters_param) == FALSE)
+#     correct_decision$true_anomaly = correct_decision$true_anomaly / nrow(data_test$anomaly)
+# 
+#     for (i in 1:nrow(data_test$normal))
+#         correct_decision$true_normal = correct_decision$true_normal + (record_in_known_clusters(data_test$normal[i, ], clusters_param) == TRUE)
+#     correct_decision$true_normal = correct_decision$true_normal / nrow(data_test$normal)
+# 
+#     return(correct_decision)
+# }
 
-    for (i in 1:nrow(data_test$anomaly))
-        correct_decision$true_anomaly = correct_decision$true_anomaly + (record_in_known_clusters(data_test$anomaly[i,], clusters_param) == FALSE)
-    correct_decision$true_anomaly = correct_decision$true_anomaly / nrow(data_test$anomaly)
-
-    for (i in 1:nrow(data_test$normal))
-        correct_decision$true_normal = correct_decision$true_normal + (record_in_known_clusters(data_test$normal[i, ], clusters_param) == TRUE)
-    correct_decision$true_normal = correct_decision$true_normal / nrow(data_test$normal)
-
-    return(correct_decision)
+calculate_success = function(data_test, trained_model) {
+  correct_decision = list(true_anomaly = 0, true_normal = 0)
+  
+  classification = trained_model$predict(data_test$anomaly)
+  correct_decision$true_anomaly = sum(!classification) / nrow(data_test$anomaly)
+  
+  classification = trained_model$predict(data_test$normal)
+  correct_decision$true_normal = sum(classification) / nrow(data_test$normal)
+  
+  return(correct_decision)
 }
 
 message("START")
 
 source("src/config.R")
+source("src/kmeans_wrapper.R")
 
 data_raw = read_csv_file(creadit_card_10k)
 print(head(data_raw, 3))
 
 normal_anomaly = extract_normal_anomaly(data_raw)
 
-message("Number of anomaliess: ", nrow(normal_anomaly$anomaly))
+message("Number of anomalies: ", nrow(normal_anomaly$anomaly))
 message("Number of normal: ", nrow(normal_anomaly$normal))
 
 training_test = extract_training_test(normal_anomaly)
 data_training = training_test$training
 data_test = training_test$test
 
-model = kmeans(data_training$normal, 10)
-clusters_param = get_cluster_parameters(data_training$normal, model)
+# model = kmeans(data_training$normal, 10)
+# clusters_param = get_cluster_parameters(data_training$normal, model)
 
-correct_decition_rate = calculate_success(data_test, clusters_param)
+model = anomaly_detector()
+model$train(grouping_kmeans(), data_training$normal, 10)
 
-message("Success rate for anomaly: ", correct_decition_rate$true_anomaly)
-message("Success rate for normal: ", correct_decition_rate$true_normal)
+correct_decision_rate = calculate_success(data_test, model)
+
+message("Success rate for anomaly: ", correct_decision_rate$true_anomaly)
+message("Success rate for normal: ", correct_decision_rate$true_normal)
 
 message("END")
