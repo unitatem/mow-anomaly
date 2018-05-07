@@ -39,46 +39,13 @@ extract_training_test = function(normal_anomaly) {
     return(result)
 }
 
-get_cluster_parameters = function(data, model) {
-    centers = model$centers
-    distance = matrix()
-    for (i in 1:nrow(model$centers))
-        distance[i] = mean(dist(data[model$cluster == i, ]))
-
-    df = list(centers = centers, distance = distance)
-    return(df)
-}
-
-record_in_known_clusters = function(element, params) {
-    for (i in 1:nrow(params$centers)) {
-        distance = dist(rbind(element, params$centers[i, ]))
-        if (distance <= params$distance[i])
-            return(TRUE)
-    }
-    return(FALSE)
-}
-
-# calculate_success = function(data_test, clusters_param) {
-#     correct_decision = list(true_anomaly = 0, true_normal = 0)
-# 
-#     for (i in 1:nrow(data_test$anomaly))
-#         correct_decision$true_anomaly = correct_decision$true_anomaly + (record_in_known_clusters(data_test$anomaly[i,], clusters_param) == FALSE)
-#     correct_decision$true_anomaly = correct_decision$true_anomaly / nrow(data_test$anomaly)
-# 
-#     for (i in 1:nrow(data_test$normal))
-#         correct_decision$true_normal = correct_decision$true_normal + (record_in_known_clusters(data_test$normal[i, ], clusters_param) == TRUE)
-#     correct_decision$true_normal = correct_decision$true_normal / nrow(data_test$normal)
-# 
-#     return(correct_decision)
-# }
-
-calculate_success = function(data_test, trained_model) {
+calculate_success = function(data_test, trained_model, dist_coeff) {
   correct_decision = list(true_anomaly = 0, true_normal = 0)
   
-  classification = trained_model$predict(data_test$anomaly)
+  classification = trained_model$predict(data_test$anomaly, dist_coeff)
   correct_decision$true_anomaly = sum(!classification) / nrow(data_test$anomaly)
   
-  classification = trained_model$predict(data_test$normal)
+  classification = trained_model$predict(data_test$normal, dist_coeff)
   correct_decision$true_normal = sum(classification) / nrow(data_test$normal)
   
   return(correct_decision)
@@ -101,13 +68,10 @@ training_test = extract_training_test(normal_anomaly)
 data_training = training_test$training
 data_test = training_test$test
 
-# model = kmeans(data_training$normal, 10)
-# clusters_param = get_cluster_parameters(data_training$normal, model)
-
 model = anomaly_detector()
-model$train(grouping_kmeans(), data_training$normal, 10)
+model$train(grouping_kmeans(), data_training$normal, clusters_count)
 
-correct_decision_rate = calculate_success(data_test, model)
+correct_decision_rate = calculate_success(data_test, model, dist_coeff)
 
 message("Success rate for anomaly: ", correct_decision_rate$true_anomaly)
 message("Success rate for normal: ", correct_decision_rate$true_normal)
