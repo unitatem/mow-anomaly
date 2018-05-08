@@ -58,7 +58,7 @@ source("src/config.R")
 source("src/kmeans_wrapper.R")
 source("src/pam_wrapper.R")
 
-data_raw = read_csv_file(creadit_card_full)
+data_raw = read_csv_file(credit_card_final)
 
 normal_anomaly = extract_normal_anomaly(data_raw)
 
@@ -70,7 +70,7 @@ data_training = training_test$training
 data_test = training_test$test
 
 model = anomaly_detector()
-model$train(grouping_kmeans(), data_training$normal, clusters_count)
+model$train(grouping_pam(), data_training$normal, clusters_count)
 
 correct_decision_rate = calculate_success(data_test, model, dist_coeff)
 

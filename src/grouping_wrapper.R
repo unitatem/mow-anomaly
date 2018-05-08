@@ -1,9 +1,7 @@
-cluster_params <- setClass("model_params", slots=list(centers="matrix", clusters="numeric"))
-
 grouping_algorithm <- setRefClass("grouping_algorithm", 
                                   methods=list(
                                     get_cluster_params = function(data, clusters) {
-                                      stop("get_cluster_params method must be implemented! It should return correctly filled object of \"cluster_params\" class.")
+                                      stop("get_cluster_params method must be implemented! It should return clustering vector.")
                                     }
                                   ))
 
@@ -20,12 +18,14 @@ anomaly_detector <- setRefClass("anomaly_detector",
                                     data = sweep(data, 2, min)
                                     data = sweep(data, 2, max-min, "/")
                                     
-                                    model_output = algorithm$get_cluster_params(data, clusters)
+                                    clustering = algorithm$get_cluster_params(data, clusters)
                                     
-                                    centers <<- model_output@centers
+                                    centers <<- matrix(nrow=clusters, ncol=ncol(data))
+                                    for (i in 1:clusters)
+                                      centers[i, ] <<- apply(data[clustering == i, ], 2, mean)
                                     
-                                    for (i in 1:nrow(model_output@centers)) {
-                                      current_cluster = data[model_output@clusters == i, ]
+                                    for (i in 1:nrow(centers)) {
+                                      current_cluster = data[clustering == i, ]
                     
                                       dist_vec = 0
                                       
@@ -34,7 +34,7 @@ anomaly_detector <- setRefClass("anomaly_detector",
                                       
                                       distance[i] <<- mean(dist_vec)
                                       std_dev[i] <<- sd(dist_vec, na.rm=TRUE)
-                                      if (is.na(std_dev[i]))  #in case of just one observation being in the centre
+                                      if (is.na(std_dev[i]))  #in case of just one observation in the cluster
                                         std_dev[i] <<- 0
                                     }
                                   },

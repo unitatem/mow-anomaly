@@ -1,9 +1,11 @@
 resources_path = "resources/"
 credit_card_file_full = "creditcard.csv"
 credit_card_file_10k = "creditcard_10k.csv"
+credit_card_file_final = "creditcard_final.csv"
 
-creadit_card_full = paste(resources_path, credit_card_file_full, sep = "")
-creadit_card_10k = paste(resources_path, credit_card_file_10k, sep = "")
+credit_card_full = paste(resources_path, credit_card_file_full, sep = "")
+credit_card_10k = paste(resources_path, credit_card_file_10k, sep = "")
+credit_card_final = paste(resources_path, credit_card_file_final, sep = "")
 
-clusters_count = 20
-dist_coeff = 2
+clusters_count = 10
+dist_coeff = 1.5
