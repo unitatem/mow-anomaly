@@ -16,6 +16,7 @@ extract_normal_anomaly = function(mixed_data) {
                 normal_nrow = 0)
 
     data$normal = mixed_data[mixed_data$Class == 0, idx_col]
+    data$normal = head(data$normal, 10000)
     data$anomaly = mixed_data[mixed_data$Class == 1, idx_col]
 
     data$normal_nrow = nrow(data$normal)
@@ -55,9 +56,9 @@ message("START")
 
 source("src/config.R")
 source("src/kmeans_wrapper.R")
+source("src/pam_wrapper.R")
 
-data_raw = read_csv_file(creadit_card_10k)
-print(head(data_raw, 3))
+data_raw = read_csv_file(creadit_card_full)
 
 normal_anomaly = extract_normal_anomaly(data_raw)
 

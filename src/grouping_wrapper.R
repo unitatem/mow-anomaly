@@ -26,13 +26,16 @@ anomaly_detector <- setRefClass("anomaly_detector",
                                     
                                     for (i in 1:nrow(model_output@centers)) {
                                       current_cluster = data[model_output@clusters == i, ]
+                    
                                       dist_vec = 0
                                       
                                       for (j in 1:nrow(current_cluster))
                                         dist_vec[j] = dist(rbind(current_cluster[j, ], centers[i, ]))
                                       
                                       distance[i] <<- mean(dist_vec)
-                                      std_dev[i] <<- sd(dist_vec)
+                                      std_dev[i] <<- sd(dist_vec, na.rm=TRUE)
+                                      if (is.na(std_dev[i]))  #in case of just one observation being in the centre
+                                        std_dev[i] <<- 0
                                     }
                                   },
                                   
