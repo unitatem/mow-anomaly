@@ -2,16 +2,18 @@ grouping_algorithm <- setRefClass("grouping_algorithm",
                                   methods=list(
                                     get_cluster_params = function(data, clusters) {
                                       stop("get_cluster_params method must be implemented! It should return clustering vector.")
+                                    },
+                                    calc_dist = function(point1, point2) {
+                                      stop("calc_dist method must be implemented! It should return distance between two points in metric specific to grouping algorithm")
                                     }
                                   ))
 
 anomaly_detector <- setRefClass("anomaly_detector", 
-                                fields=list(centers="matrix", distance="numeric", std_dev="numeric", max="numeric", min="numeric"),
+                                fields=list(alg="grouping_algorithm", centers="matrix", distance="numeric", std_dev="numeric", max="numeric", min="numeric"),
                                 methods=list(
                                   
                                   train = function(algorithm, data, clusters) {
-                                    if (!extends(class(algorithm), "grouping_algorithm"))
-                                      stop("algorithm variable should extend \"grouping_algorithm\" class!")
+                                    alg <<- algorithm
                                     
                                     max <<- apply(data, 2, max)
                                     min <<- apply(data, 2, min)
@@ -30,7 +32,7 @@ anomaly_detector <- setRefClass("anomaly_detector",
                                       dist_vec = 0
                                       
                                       for (j in 1:nrow(current_cluster))
-                                        dist_vec[j] = dist(rbind(current_cluster[j, ], centers[i, ]))
+                                        dist_vec[j] = alg$calc_dist(current_cluster[j, ], centers[i, ])
                                       
                                       distance[i] <<- mean(dist_vec)
                                       std_dev[i] <<- sd(dist_vec, na.rm=TRUE)
@@ -47,7 +49,7 @@ anomaly_detector <- setRefClass("anomaly_detector",
                                     for (i in 1:nrow(data)) {
                                       result[i] = FALSE
                                       for (j in 1:nrow(centers)) {
-                                        d = dist(rbind(data[i, ], centers[j, ]))
+                                        d = alg$calc_dist(data[i, ], centers[j, ])
                                         if (d <= distance[j] + dist_coeff*std_dev[j]) {
                                           result[i] = TRUE
                                           break
