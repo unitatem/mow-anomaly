@@ -33,7 +33,6 @@ anomaly_detector <- setRefClass("anomaly_detector",
                                     for (i in 1:clusters)
                                       centers[i, ] <<- apply(data[clustering == i, ], 2, mean)
                                     
-                                    norm_distance = vector("numeric")
                                     for (i in 1:nrow(centers)) {
                                       current_cluster = data[clustering == i, ]
                     
@@ -47,9 +46,11 @@ anomaly_detector <- setRefClass("anomaly_detector",
                                       if (is.na(std_dev[i]))  #in case of just one observation in the cluster
                                         std_dev[i] <<- 0
                                       
-                                      norm_distance = c(norm_distance, (dist_vec - distance[i]) / std_dev[i])
+                                      if (std_dev[i] == 0)
+                                        dist_coeff[i] <<- 0
+                                      else
+                                        dist_coeff[i] <<- quantile((dist_vec - distance[i]) / std_dev[i], 1 - tolerance)
                                     }
-                                    dist_coeff <<- quantile(norm_distance, (1 - tolerance))
                                   },
                                   
                                   predict = function(data) {
@@ -61,7 +62,7 @@ anomaly_detector <- setRefClass("anomaly_detector",
                                       result[i] = FALSE
                                       for (j in 1:nrow(centers)) {
                                         d = alg$calc_dist(data[i, ], centers[j, ])
-                                        if (d <= distance[j] + dist_coeff*std_dev[j]) {
+                                        if (d <= distance[j] + dist_coeff[j]*std_dev[j]) {
                                           result[i] = TRUE
                                           break
                                         }

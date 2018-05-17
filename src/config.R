@@ -1,11 +1,16 @@
-resources_path = "resources/"
-credit_card_file_full = "creditcard.csv"
-credit_card_file_10k = "creditcard_10k.csv"
-credit_card_file_final = "creditcard_final.csv"
+source("src/data_extraction.R")
 
-credit_card_full = paste(resources_path, credit_card_file_full, sep = "")
-credit_card_10k = paste(resources_path, credit_card_file_10k, sep = "")
-credit_card_data = paste(resources_path, credit_card_file_final, sep = "")
+resources_path = "resources/"
+
+credit_card_file = "creditcard_final.csv"
+frogs_file = "Frogs_MFCCs.csv"
+
+credit_card_data = paste(resources_path, credit_card_file, sep = "")
+frog_data = paste(resources_path, frogs_file, sep = "")
+
+extract_normal_anomaly= function() {
+  return(extract_normal_anomaly_card(credit_card_data))
+}
 
 clusters_count = 10
-tolerance = 0.05
+tolerance = 0.10
