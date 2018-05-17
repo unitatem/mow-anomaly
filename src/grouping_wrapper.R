@@ -9,10 +9,17 @@ grouping_algorithm <- setRefClass("grouping_algorithm",
                                   ))
 
 anomaly_detector <- setRefClass("anomaly_detector", 
-                                fields=list(alg="grouping_algorithm", centers="matrix", distance="numeric", std_dev="numeric", max="numeric", min="numeric"),
+                                fields=list(alg="grouping_algorithm", 
+                                            centers="matrix", 
+                                            distance="numeric", 
+                                            std_dev="numeric", 
+                                            max="numeric", 
+                                            min="numeric",
+                                            dist_coeff="numeric"),
+                                
                                 methods=list(
                                   
-                                  train = function(algorithm, data, clusters) {
+                                  train = function(algorithm, data, clusters, tolerance) {
                                     alg <<- algorithm
                                     
                                     max <<- apply(data, 2, max)
@@ -38,19 +45,24 @@ anomaly_detector <- setRefClass("anomaly_detector",
                                       std_dev[i] <<- sd(dist_vec, na.rm=TRUE)
                                       if (is.na(std_dev[i]))  #in case of just one observation in the cluster
                                         std_dev[i] <<- 0
+                                      
+                                      if (std_dev[i] == 0)
+                                        dist_coeff[i] <<- 0
+                                      else
+                                        dist_coeff[i] <<- quantile((dist_vec - distance[i]) / std_dev[i], 1 - tolerance)
                                     }
                                   },
                                   
-                                  predict = function(data, dist_coeff="numeric") {
+                                  predict = function(data) {
                                     data = sweep(data, 2, min)
                                     data = sweep(data, 2, max-min, "/")
-                                    result = 0
+                                    result = vector(length=nrow(data))
                                     
                                     for (i in 1:nrow(data)) {
                                       result[i] = FALSE
                                       for (j in 1:nrow(centers)) {
                                         d = alg$calc_dist(data[i, ], centers[j, ])
-                                        if (d <= distance[j] + dist_coeff*std_dev[j]) {
+                                        if (d <= distance[j] + dist_coeff[j]*std_dev[j]) {
                                           result[i] = TRUE
                                           break
                                         }
