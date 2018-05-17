@@ -20,7 +20,7 @@ anomaly_detector <- setRefClass("anomaly_detector",
                                     data = sweep(data, 2, min)
                                     data = sweep(data, 2, max-min, "/")
                                     
-                                    clustering = algorithm$get_cluster_params(data, clusters)
+                                    clustering = alg$get_cluster_params(data, clusters)
                                     
                                     centers <<- matrix(nrow=clusters, ncol=ncol(data))
                                     for (i in 1:clusters)
