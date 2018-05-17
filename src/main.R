@@ -58,7 +58,7 @@ source("src/config.R")
 source("src/kmeans_wrapper.R")
 source("src/pam_wrapper.R")
 
-data_raw = read_csv_file(credit_card_final)
+data_raw = read_csv_file(credit_card_data)
 
 normal_anomaly = extract_normal_anomaly(data_raw)
 
