@@ -16,7 +16,6 @@ extract_normal_anomaly = function(mixed_data) {
                 normal_nrow = 0)
 
     data$normal = mixed_data[mixed_data$Class == 0, idx_col]
-    data$normal = head(data$normal, 10000)
     data$anomaly = mixed_data[mixed_data$Class == 1, idx_col]
 
     data$normal_nrow = nrow(data$normal)
@@ -40,13 +39,13 @@ extract_training_test = function(normal_anomaly) {
     return(result)
 }
 
-calculate_success = function(data_test, trained_model, dist_coeff) {
+calculate_success = function(data_test, trained_model) {
   correct_decision = list(true_anomaly = 0, true_normal = 0)
   
-  classification = trained_model$predict(data_test$anomaly, dist_coeff)
+  classification = trained_model$predict(data_test$anomaly)
   correct_decision$true_anomaly = sum(!classification) / nrow(data_test$anomaly)
   
-  classification = trained_model$predict(data_test$normal, dist_coeff)
+  classification = trained_model$predict(data_test$normal)
   correct_decision$true_normal = sum(classification) / nrow(data_test$normal)
   
   return(correct_decision)
@@ -70,9 +69,9 @@ data_training = training_test$training
 data_test = training_test$test
 
 model = anomaly_detector()
-model$train(grouping_pam(), data_training$normal, clusters_count)
+model$train(grouping_kmeans(), data_training$normal, clusters_count, tolerance)
 
-correct_decision_rate = calculate_success(data_test, model, dist_coeff)
+correct_decision_rate = calculate_success(data_test, model)
 
 message("Success rate for anomaly: ", correct_decision_rate$true_anomaly)
 message("Success rate for normal: ", correct_decision_rate$true_normal)

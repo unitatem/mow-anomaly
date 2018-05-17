@@ -8,4 +8,4 @@ credit_card_10k = paste(resources_path, credit_card_file_10k, sep = "")
 credit_card_data = paste(resources_path, credit_card_file_final, sep = "")
 
 clusters_count = 10
-dist_coeff = 1.5
+tolerance = 0.05
