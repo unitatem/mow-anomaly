@@ -5,7 +5,6 @@ read_csv_file = function(path) {
   return(data)
 }
 
-
 extract_training_test = function(normal_anomaly) {
   perm_vect = sample(1:normal_anomaly$normal_nrow)
   divide_idx = nrow(normal_anomaly$anomaly)

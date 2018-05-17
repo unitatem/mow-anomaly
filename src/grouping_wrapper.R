@@ -56,7 +56,7 @@ anomaly_detector <- setRefClass("anomaly_detector",
                                   predict = function(data) {
                                     data = sweep(data, 2, min)
                                     data = sweep(data, 2, max-min, "/")
-                                    result = 0
+                                    result = vector(length=nrow(data))
                                     
                                     for (i in 1:nrow(data)) {
                                       result[i] = FALSE

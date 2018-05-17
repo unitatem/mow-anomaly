@@ -1,7 +1,6 @@
-source("src/config.R")
 source("src/grouping_wrapper.R")
 
-grouping_experiment = function(algorithm) {
+grouping_experiment = function(algorithm, extract_normal_anomaly, clusters_count, tolerance) {
   normal_anomaly = extract_normal_anomaly()
   
   message("Number of anomalies: ", nrow(normal_anomaly$anomaly))
