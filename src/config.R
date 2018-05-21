@@ -12,5 +12,4 @@ extract_normal_anomaly = function() {
   return(extract_normal_anomaly_card(credit_card_data))
 }
 
-clusters_count = 10
-tolerance = 0.10
+clusters_count = 2

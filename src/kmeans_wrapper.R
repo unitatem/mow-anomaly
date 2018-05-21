@@ -5,8 +5,5 @@ grouping_kmeans <- setRefClass("grouping_kmeans", contains="grouping_algorithm",
                                  get_cluster_params = function(data, clusters) {
                                    model = kmeans(data, clusters, iter.max=50)
                                    return(model$cluster)
-                                 },
-                                 calc_dist = function(point1, point2) {
-                                   return(dist(rbind(point1, point2)))
                                  }
                                ))
