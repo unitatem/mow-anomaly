@@ -1,8 +1,8 @@
 library(RANN)
 
-normalize = function(data, upper_border, lower_border) {
-  data = sweep(data, 2, lower_border)
-  data = sweep(data, 2, upper_border-lower_border, "/")
+normalize = function(data, max, min) {
+  data = sweep(data, 2, min)
+  data = sweep(data, 2, max-min, "/")
   return(data)
 }
 
