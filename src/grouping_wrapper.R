@@ -1,12 +1,24 @@
 library(RANN)
 
+normalize = function(data, upper_border, lower_border) {
+  data = sweep(data, 2, lower_border)
+  data = sweep(data, 2, upper_border-lower_border, "/")
+  return(data)
+}
+
+discard_outliers = function(vec) {
+  qnt = quantile(vec, probs=c(.25, .75))
+  H = 1.5 * IQR(vec)
+  vec[vec < (qnt[1] - H)] <- NA
+  vec[vec > (qnt[2] + H)] <- NA
+  
+  return(vec)
+}
+
 grouping_algorithm <- setRefClass("grouping_algorithm", 
                                   methods=list(
                                     get_cluster_params = function(data, clusters) {
                                       stop("get_cluster_params method must be implemented! It should return clustering vector.")
-                                    },
-                                    calc_dist = function(point1, point2) {
-                                      stop("calc_dist method must be implemented! It should return distance between two points in metric specific to grouping algorithm")
                                     }
                                   ))
 
@@ -23,41 +35,36 @@ anomaly_detector <- setRefClass("anomaly_detector",
                                   
                                   train = function(algorithm, data, clusters, tolerance) {
                                     alg <<- algorithm
-                                    
+                                    clusters <<- clusters
+                                    border <<- vector("numeric", length=clusters)
                                     max <<- apply(data, 2, max)
                                     min <<- apply(data, 2, min)
-                                    data = sweep(data, 2, min)
-                                    data = sweep(data, 2, max-min, "/")
+                                    training_data <<- normalize(data, max, min)
                                     
-                                    clustering <<- alg$get_cluster_params(data, clusters)
-                                    training_data <<- data
+                                    clustering <<- alg$get_cluster_params(training_data, clusters)
                                     
-                                    border <<- vector("numeric", length=clusters)
-                                    clusters <<- clusters
                                     
                                     for (i in 1:clusters) {
-                                      current_cluster = data[clustering == i, ]
-
-                                      dist_vec = apply(as.matrix(dist(current_cluster)), 1, mean)
+                                      current_cluster = training_data[clustering == i, ]
                                       
-                                      qnt <- quantile(dist_vec, probs=c(.25, .75))
-                                      H <- 1.5 * IQR(dist_vec)
-                                      dist_vec[dist_vec < (qnt[1] - H)] <- NA
-                                      dist_vec[dist_vec > (qnt[2] + H)] <- NA
+                                      dist_vec = apply(as.matrix(dist(current_cluster)), 1, mean)
+                                      dist_vec = discard_outliers(dist_vec)
                                       
                                       border[i] <<- max(dist_vec, na.rm=TRUE)
                                     }
                                   },
                                   
                                   predict = function(data) {
-                                    data = sweep(data, 2, min)
-                                    data = sweep(data, 2, max-min, "/")
+                                    data = normalize(data, max, min)
                                     result = vector(length=nrow(data))
                                     
                                     for (i in 1:clusters) {
                                       current_cluster = training_data[clustering == i, ]
-                                      partial_result = as.numeric(apply(nn2(current_cluster, query=data, k=nrow(current_cluster))$nn.dists, 1, mean))
+                                      
+                                      partial_result = nn2(current_cluster, data, k=nrow(current_cluster))$nn.dists
+                                      partial_result = as.numeric(apply(partial_result, 1, mean))
                                       partial_result = (partial_result <= border[i])
+                                      
                                       result = result | partial_result
                                     }
                                     return(result)
