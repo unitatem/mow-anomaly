@@ -10,8 +10,7 @@ grouping_experiment = function(algorithm, extract_normal_anomaly, clusters_count
   data_training = training_test$training
   data_test = training_test$test
   
-  model = anomaly_detector()
-  model$train(algorithm, data_training$normal, clusters_count, tolerance)
+  model = anomaly_detector(algorithm, data_training$normal, clusters_count)
   
   correct_decision_rate = calculate_success(data_test, model)
   
