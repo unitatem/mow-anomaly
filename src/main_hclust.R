@@ -1,7 +1,7 @@
 rm(list = ls())
 
 source("src/config.R")
-source("src/grouping_experiment.R")
+source("src/experiment.R")
 source("src/hclust_wrapper.R")
 
 message("START")
