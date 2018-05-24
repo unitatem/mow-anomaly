@@ -24,7 +24,7 @@ experiment = function(model_gen, extract_normal_anomaly) {
 
 grouping_experiment = function(algorithm, extract_normal_anomaly, clusters_count) {
   experiment(model_gen = function(training_data) {
-    return(anomaly_detector(algorithm, training_data, clusters_count))
+    return(anomaly_detector(algorithm=algorithm, data=training_data, clusters=clusters_count))
   }, extract_normal_anomaly)
 }
 

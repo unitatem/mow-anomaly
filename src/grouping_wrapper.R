@@ -23,7 +23,11 @@ discard_outliers = function(vec) {
   return(vec)
 }
 
-anomaly_detector = function(algorithm, data, clusters) {
+anomaly_detector = function (x, ...) {
+  UseMethod("anomaly_detector")
+}
+
+anomaly_detector.default = function(algorithm, data, clusters) {
   max = apply(data, 2, max)
   min = apply(data, 2, min)
   data = normalize(data, max, min)
@@ -43,11 +47,40 @@ anomaly_detector = function(algorithm, data, clusters) {
   
   model = structure(list(training_data=data, clustering=clustering, clusters=clusters, 
                          max=max, min=min, border=border, silh=silh),
-                    class="anomaly_detector_class")
+                    class="anomaly_detector")
   return(model)
 }
 
-predict.anomaly_detector_class = function(model, data, binary=TRUE) {
+anomaly_detector.formula = function(formula, data=NULL, subset, algorithm, clusters) {
+  if (!inherits(formula, "formula"))
+    stop("method is only for formula objects")
+  
+  call = match.call()
+  mf = call
+  
+  if (identical(class(eval.parent(mf$data)), "matrix"))
+    mf$data = as.data.frame(eval.parent(mf$data))
+  
+  mf$algorithm = NULL
+  mf$clusters = NULL
+  mf[[1]] = as.name("model.frame")
+  mf = eval(mf, parent.frame())
+  
+  mt = attr(mf, "terms")
+  attr(mt, "intercept") = 0
+  data = model.frame(mt, mf)
+  
+  result = anomaly_detector.default(algorithm, data, clusters)
+  
+  result$call = call
+  result$call[[1]] = as.name("anomaly_detector")
+  result$terms = mt
+  class(result) = c("anomaly_detector.formula", class(result))
+
+  return (result)
+}
+
+predict.anomaly_detector = function(model, data, binary=TRUE) {
   data = normalize(data, model$max, model$min)
   result = matrix(0, nrow=nrow(data), ncol=model$clusters)
   
@@ -68,4 +101,9 @@ predict.anomaly_detector_class = function(model, data, binary=TRUE) {
     return(result <= 0)
   else
     return(result)
+}
+
+predict.anomaly_detector.formula = function(model, data, binary=TRUE) {
+  data = model.frame(model$terms, data)
+  return(predict.anomaly_detector(model, data, binary))
 }

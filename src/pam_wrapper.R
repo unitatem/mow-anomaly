@@ -5,6 +5,6 @@ grouping_pam <- setRefClass("grouping_pam", contains="grouping_algorithm",
                                methods=list(
                                  get_cluster_params = function(data, clusters) {
                                    model = pam(data, clusters)
-                                   return(unname(model$clustering))
+                                   return(model$clustering)
                                  }
                                ))
