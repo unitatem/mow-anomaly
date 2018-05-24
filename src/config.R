@@ -9,8 +9,9 @@ credit_card_data = paste(resources_path, credit_card_file, sep = "")
 frog_data = paste(resources_path, frogs_file, sep = "")
 
 extract_normal_anomaly = function() {
-  return(extract_normal_anomaly_card(credit_card_data))
+  return(extract_normal_anomaly_frog(frog_data))
 }
 
-clusters_count = 10
-tolerance = 0.10
+clusters_count = 200
+nu = 0.05
+gamma = 0.2

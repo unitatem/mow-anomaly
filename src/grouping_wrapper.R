@@ -1,74 +1,60 @@
+library(RANN)
+
 grouping_algorithm <- setRefClass("grouping_algorithm", 
                                   methods=list(
                                     get_cluster_params = function(data, clusters) {
                                       stop("get_cluster_params method must be implemented! It should return clustering vector.")
-                                    },
-                                    calc_dist = function(point1, point2) {
-                                      stop("calc_dist method must be implemented! It should return distance between two points in metric specific to grouping algorithm")
                                     }
                                   ))
 
-anomaly_detector <- setRefClass("anomaly_detector", 
-                                fields=list(alg="grouping_algorithm", 
-                                            centers="matrix", 
-                                            distance="numeric", 
-                                            std_dev="numeric", 
-                                            max="numeric", 
-                                            min="numeric",
-                                            dist_coeff="numeric"),
-                                
-                                methods=list(
-                                  
-                                  train = function(algorithm, data, clusters, tolerance) {
-                                    alg <<- algorithm
-                                    
-                                    max <<- apply(data, 2, max)
-                                    min <<- apply(data, 2, min)
-                                    data = sweep(data, 2, min)
-                                    data = sweep(data, 2, max-min, "/")
-                                    
-                                    clustering = alg$get_cluster_params(data, clusters)
-                                    
-                                    centers <<- matrix(nrow=clusters, ncol=ncol(data))
-                                    for (i in 1:clusters)
-                                      centers[i, ] <<- apply(data[clustering == i, ], 2, mean)
-                                    
-                                    for (i in 1:nrow(centers)) {
-                                      current_cluster = data[clustering == i, ]
-                    
-                                      dist_vec = 0
-                                      
-                                      for (j in 1:nrow(current_cluster))
-                                        dist_vec[j] = alg$calc_dist(current_cluster[j, ], centers[i, ])
-                                      
-                                      distance[i] <<- mean(dist_vec)
-                                      std_dev[i] <<- sd(dist_vec, na.rm=TRUE)
-                                      if (is.na(std_dev[i]))  #in case of just one observation in the cluster
-                                        std_dev[i] <<- 0
-                                      
-                                      if (std_dev[i] == 0)
-                                        dist_coeff[i] <<- 0
-                                      else
-                                        dist_coeff[i] <<- quantile((dist_vec - distance[i]) / std_dev[i], 1 - tolerance)
-                                    }
-                                  },
-                                  
-                                  predict = function(data) {
-                                    data = sweep(data, 2, min)
-                                    data = sweep(data, 2, max-min, "/")
-                                    result = vector(length=nrow(data))
-                                    
-                                    for (i in 1:nrow(data)) {
-                                      result[i] = FALSE
-                                      for (j in 1:nrow(centers)) {
-                                        d = alg$calc_dist(data[i, ], centers[j, ])
-                                        if (d <= distance[j] + dist_coeff[j]*std_dev[j]) {
-                                          result[i] = TRUE
-                                          break
-                                        }
-                                      }
-                                    }
-                                    return(result)
-                                  }
-                                ))
+normalize = function(data, max, min) {
+  data = sweep(data, 2, min)
+  data = sweep(data, 2, max-min, "/")
+  return(data)
+}
 
+discard_outliers = function(vec) {
+  qnt = quantile(vec, probs=c(.25, .75))
+  H = 1.5 * IQR(vec)
+  vec[vec < (qnt[1] - H)] <- NA
+  vec[vec > (qnt[2] + H)] <- NA
+  
+  return(vec)
+}
+
+anomaly_detector = function(algorithm, data, clusters) {
+  max = apply(data, 2, max)
+  min = apply(data, 2, min)
+  data = normalize(data, max, min)
+  
+  clustering = algorithm$get_cluster_params(data, clusters)
+  
+  border = vector("numeric", length=clusters)
+  for (i in 1:clusters) {
+    current_cluster = data[clustering == i, ]
+    
+    dist_vec = apply(as.matrix(dist(current_cluster)), 1, mean)
+    dist_vec = discard_outliers(dist_vec)
+    
+    border[i] = max(dist_vec, na.rm=TRUE)
+  }
+  model = structure(list(training_data=data, clustering=clustering, clusters=clusters, max=max, min=min, border=border),
+                    class="anomaly_detector_class")
+  return(model)
+}
+
+predict.anomaly_detector_class = function(model, data) {
+  data = normalize(data, model$max, model$min)
+  result = vector(length=nrow(data))
+  
+  for (i in 1:model$clusters) {
+    current_cluster = model$training_data[model$clustering == i, ]
+    
+    partial_result = nn2(current_cluster, data, k=nrow(current_cluster))$nn.dists
+    partial_result = as.numeric(apply(partial_result, 1, mean))
+    partial_result = (partial_result <= model$border[i])
+    
+    result = result | partial_result
+  }
+  return(result)
+}

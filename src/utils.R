@@ -22,13 +22,17 @@ extract_training_test = function(normal_anomaly) {
 }
 
 calculate_success = function(data_test, trained_model) {
-  correct_decision = list(true_anomaly = 0, true_normal = 0)
+  correct_decision = list(true_anomaly = 0, true_normal = 0, true_class = 0)
   
-  classification = trained_model$predict(data_test$anomaly)
+  classification = predict(trained_model, data_test$anomaly)
   correct_decision$true_anomaly = sum(!classification) / nrow(data_test$anomaly)
+  correct_decision$true_class = sum(!classification)
   
-  classification = trained_model$predict(data_test$normal)
+  classification = predict(trained_model, data_test$normal)
   correct_decision$true_normal = sum(classification) / nrow(data_test$normal)
+  correct_decision$true_class = correct_decision$true_class + sum(classification)
+  
+  correct_decision$true_class = correct_decision$true_class / (nrow(data_test$normal) + nrow(data_test$anomaly))
   
   return(correct_decision)
 }
