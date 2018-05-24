@@ -1,4 +1,5 @@
 library(RANN)
+library(cluster)
 
 grouping_algorithm <- setRefClass("grouping_algorithm", 
                                   methods=list(
@@ -38,23 +39,33 @@ anomaly_detector = function(algorithm, data, clusters) {
     
     border[i] = max(dist_vec, na.rm=TRUE)
   }
-  model = structure(list(training_data=data, clustering=clustering, clusters=clusters, max=max, min=min, border=border),
+  silh = mean(silhouette(clustering, dist=dist(data))[, 3])
+  
+  model = structure(list(training_data=data, clustering=clustering, clusters=clusters, 
+                         max=max, min=min, border=border, silh=silh),
                     class="anomaly_detector_class")
   return(model)
 }
 
-predict.anomaly_detector_class = function(model, data) {
+predict.anomaly_detector_class = function(model, data, binary=TRUE) {
   data = normalize(data, model$max, model$min)
-  result = vector(length=nrow(data))
+  result = matrix(0, nrow=nrow(data), ncol=model$clusters)
   
   for (i in 1:model$clusters) {
     current_cluster = model$training_data[model$clustering == i, ]
     
     partial_result = nn2(current_cluster, data, k=nrow(current_cluster))$nn.dists
     partial_result = as.numeric(apply(partial_result, 1, mean))
-    partial_result = (partial_result <= model$border[i])
+    partial_result = partial_result - model$border[i]
     
-    result = result | partial_result
+    if (model$border[i] != 0)
+      partial_result = partial_result / model$border[i]
+    
+    result[, i] <- partial_result
   }
-  return(result)
+  result = apply(result, 1, min)
+  if (binary)
+    return(result <= 0)
+  else
+    return(result)
 }
