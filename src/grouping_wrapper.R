@@ -23,14 +23,13 @@ discard_outliers = function(vec) {
 }
 
 anomaly_detector = function(algorithm, data, clusters) {
-  border = vector("numeric", length=clusters)
   max = apply(data, 2, max)
   min = apply(data, 2, min)
   data = normalize(data, max, min)
   
   clustering = algorithm$get_cluster_params(data, clusters)
   
-  
+  border = vector("numeric", length=clusters)
   for (i in 1:clusters) {
     current_cluster = data[clustering == i, ]
     
