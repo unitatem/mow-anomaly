@@ -7,7 +7,8 @@ experiment = function(model_gen, extract_normal_anomaly) {
   message("Number of anomalies: ", nrow(normal_anomaly$anomaly))
   message("Number of normal: ", nrow(normal_anomaly$normal))
   
-  training_test = extract_training_test(normal_anomaly)
+  training_test = extract_training_test_list(normal_anomaly)
+
   data_training = training_test$training
   data_test = training_test$test
   
@@ -18,6 +19,7 @@ experiment = function(model_gen, extract_normal_anomaly) {
   message("Success rate for anomaly: ", correct_decision_rate$true_anomaly)
   message("Success rate for normal: ", correct_decision_rate$true_normal)
   message("Overall success rate: ", correct_decision_rate$true_class)
+  message("Mean silhouette width: ", model$silh)
 }
 
 grouping_experiment = function(algorithm, extract_normal_anomaly, clusters_count) {

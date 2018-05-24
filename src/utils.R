@@ -5,17 +5,30 @@ read_csv_file = function(path) {
   return(data)
 }
 
-extract_training_test = function(normal_anomaly) {
-  perm_vect = sample(1:normal_anomaly$normal_nrow)
-  divide_idx = nrow(normal_anomaly$anomaly)
+extract_training_test = function(data, training_count) {
+  if (training_count == 0)
+    return(list(test = data, training = data.frame()))
+  else if (training_count == nrow(data))
+    return(list(test = data.frame(), training = data))
   
-  idx_normal_2_test = perm_vect[1:divide_idx]
-  idx_normal_2_training = perm_vect[(divide_idx + 1):normal_anomaly$normal_nrow]
+  perm_vect = sample(1:nrow(data))
   
-  data_training = list(normal = normal_anomaly$normal[idx_normal_2_training, ])
+  idx_normal_2_training = perm_vect[1:training_count]
+  idx_normal_2_test = perm_vect[(training_count + 1):nrow(data)]
   
-  data_test = list(normal = normal_anomaly$normal[idx_normal_2_test,],
-                   anomaly = normal_anomaly$anomaly)
+  return(list(test = data[idx_normal_2_test, ], training = data[idx_normal_2_training, ]))
+}
+
+extract_training_test_list = function(normal_anomaly, anomaly_2_train = 0) {
+  anomaly_training_count = as.integer(nrow(normal_anomaly$anomaly) * anomaly_2_train)
+  normal_training_count = nrow(normal_anomaly$normal) - nrow(normal_anomaly$anomaly)
+  
+  anomaly = extract_training_test(normal_anomaly$anomaly, anomaly_training_count)
+  normal = extract_training_test(normal_anomaly$normal, normal_training_count)
+  
+  data_training = list(normal = normal$training, anomaly = anomaly$training)
+  
+  data_test = list(normal = normal$test, anomaly = anomaly$test)
   
   result = list(training = data_training, test = data_test)
   return(result)
