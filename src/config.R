@@ -13,5 +13,3 @@ extract_normal_anomaly = function() {
 }
 
 clusters_count = 200
-nu = 0.05
-gamma = 0.2
