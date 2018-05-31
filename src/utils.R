@@ -43,17 +43,16 @@ toLogical = function(x) {
 }
 
 calculate_success = function(data_test, trained_model) {
-  correct_decision = list(true_anomaly = 0, true_normal = 0, true_class = 0)
+  correct_decision = list(true_anomaly = 0, true_normal = 0, true_class = 0, silh = 0)
   
   classification = toLogical(predict(trained_model, data_test$anomaly))
   correct_decision$true_anomaly = sum(!classification) / nrow(data_test$anomaly)
-  correct_decision$true_class = sum(!classification)
   
   classification = toLogical(predict(trained_model, data_test$normal))
   correct_decision$true_normal = sum(classification) / nrow(data_test$normal)
-  correct_decision$true_class = correct_decision$true_class + sum(classification)
   
-  correct_decision$true_class = correct_decision$true_class / (nrow(data_test$normal) + nrow(data_test$anomaly))
+  correct_decision$true_class = (correct_decision$true_anomaly + correct_decision$true_normal)/ 2
+  correct_decision$silh = trained_model$silh
   
   return(correct_decision)
 }

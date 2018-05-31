@@ -12,8 +12,6 @@ extract_normal_anomaly_card = function(path) {
   data$normal = mixed_data[mixed_data$Class == 0, idx_col]
   data$anomaly = mixed_data[mixed_data$Class == 1, idx_col]
   
-  data$normal_nrow = nrow(data$normal)
-  
   return(data)
 }
 
@@ -29,8 +27,6 @@ extract_normal_anomaly_frog = function(path) {
   
   data$normal = mixed_data[mixed_data$Species != anomalous_species, idx_col]
   data$anomaly = mixed_data[mixed_data$Species == anomalous_species, idx_col]
-  
-  data$normal_nrow = nrow(data$normal)
   
   return(data)
 }

@@ -13,3 +13,6 @@
 # Project
 resources
 
+# Package
+*.Rcheck
+

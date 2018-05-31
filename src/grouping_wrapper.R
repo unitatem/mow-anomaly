@@ -80,7 +80,7 @@ anomaly_detector.formula = function(formula, data=NULL, subset, algorithm, clust
   return (result)
 }
 
-predict.anomaly_detector = function(model, data, binary=TRUE) {
+predict.anomaly_detector = function(model, data, binary=TRUE, ...) {
   data = normalize(data, model$max, model$min)
   result = matrix(0, nrow=nrow(data), ncol=model$clusters)
   
@@ -103,7 +103,7 @@ predict.anomaly_detector = function(model, data, binary=TRUE) {
     return(result)
 }
 
-predict.anomaly_detector.formula = function(model, data, binary=TRUE) {
+predict.anomaly_detector.formula = function(model, data, binary=TRUE, ...) {
   data = model.frame(model$terms, data)
   return(predict.anomaly_detector(model, data, binary))
 }
