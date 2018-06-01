@@ -1,13 +1,6 @@
 library(RANN)
 library(cluster)
 
-grouping_algorithm <- setRefClass("grouping_algorithm", 
-                                  methods=list(
-                                    get_cluster_params = function(data, clusters) {
-                                      stop("get_cluster_params method must be implemented! It should return clustering vector.")
-                                    }
-                                  ))
-
 normalize <- function(data, max, min) {
   data <- sweep(data, 2, min)
   data <- sweep(data, 2, max-min, "/")
@@ -32,7 +25,7 @@ anomaly_detector.default <- function(..., algorithm, data, clusters) {
   min <- apply(data, 2, min)
   data <- normalize(data, max, min)
   
-  clustering <- algorithm$get_cluster_params(data, clusters)
+  clustering <- algorithm(data, clusters)
   
   border <- vector("numeric", length=clusters)
   for (i in 1:clusters) {

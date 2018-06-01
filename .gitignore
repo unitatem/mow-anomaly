@@ -15,4 +15,5 @@ resources
 
 # Package
 *.Rcheck
+*.tar.gz
 
