@@ -12,8 +12,8 @@ data_set_name <- "frog"
 result_prefix <- paste(resources_path, data_set_name, sep="")
 
 extract_normal_anomaly <- function() {
-  return(extract_normal_anomaly_frog(frog_data))
+  return(extract_normal_anomaly_card(credit_card_data))
 }
 
-clusters_count <- seq(10, 10, 10)
-samples <- 1
+clusters_count <- seq(10, 10, 1000)
+samples <- 10

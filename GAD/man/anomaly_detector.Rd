@@ -33,3 +33,9 @@ anomaly_detector(..., algorithm, data, clusters)
   \item{border}{ vector of hyper-n-ellipsoids' radii }
   \item{silh}{ mean silhouette width of all points in training set }
 }
+\examples{
+data("card")
+model = anomaly_detector(algorithm=grouping_kmeans, data=card$normal, clusters=200)
+predict(model, card$anomaly)
+predict(model, card$anomaly, binary=FALSE)
+}

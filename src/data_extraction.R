@@ -6,8 +6,7 @@ extract_normal_anomaly_card <- function(path) {
   idx_col <- 3:(ncol(mixed_data) - 1)
   
   data <- list(normal = 0,
-              anomaly = 0,
-              normal_nrow = 0)
+              anomaly = 0)
   
   data$normal <- mixed_data[mixed_data$Class == 0, idx_col]
   data$anomaly <- mixed_data[mixed_data$Class == 1, idx_col]
@@ -22,8 +21,7 @@ extract_normal_anomaly_frog <- function(path) {
   anomalous_species <- "ScinaxRuber"
   
   data <- list(normal = 0,
-              anomaly = 0,
-              normal_nrow = 0)
+              anomaly = 0)
   
   data$normal <- mixed_data[mixed_data$Species != anomalous_species, idx_col]
   data$anomaly <- mixed_data[mixed_data$Species == anomalous_species, idx_col]

@@ -17,3 +17,9 @@ Binary or score prediction for \code{anomaly_detector} model.
 \value{
   Logical vector indicating if given element is normal or score vector (higher values mean more anomalous) if argument binary = FALSE.
 }
+\examples{
+data("card")
+model = anomaly_detector(algorithm=grouping_kmeans, data=card$normal, clusters=200)
+predict(model, card$anomaly)
+predict(model, card$anomaly, binary=FALSE)
+}
