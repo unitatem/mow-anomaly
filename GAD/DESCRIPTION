@@ -1,0 +1,10 @@
+Package: GAD
+Title: Detect anomalies using grouping algorithms
+Version: 1.0
+Date: 2018-05-30
+Author: Pawel Karwacki, Mariusz Wachowicz
+Maintainer: Pawel Karwacki <pawkarwacki@wp.pl>
+Description: This package allows anomaly detection using grouping algorithms - both build in and custom.
+License: MIT + file LICENSE
+Depends: R (>= 3.5.0), cluster, RANN, stats
+

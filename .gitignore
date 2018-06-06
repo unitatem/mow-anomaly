@@ -13,3 +13,7 @@
 # Project
 resources
 
+# Package
+*.Rcheck
+*.tar.gz
+

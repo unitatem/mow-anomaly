@@ -1,17 +1,19 @@
 source("src/data_extraction.R")
 
-resources_path = "resources/"
+resources_path <- "resources/"
 
-credit_card_file = "creditcard_final.csv"
-frogs_file = "Frogs_MFCCs.csv"
+credit_card_file <- "creditcard_final.csv"
+frogs_file <- "Frogs_MFCCs.csv"
 
-credit_card_data = paste(resources_path, credit_card_file, sep = "")
-frog_data = paste(resources_path, frogs_file, sep = "")
+credit_card_data <- paste(resources_path, credit_card_file, sep="")
+frog_data <- paste(resources_path, frogs_file, sep="")
 
-extract_normal_anomaly = function() {
-  return(extract_normal_anomaly_frog(frog_data))
+data_set_name <- "frog"
+result_prefix <- paste(resources_path, data_set_name, sep="")
+
+extract_normal_anomaly <- function() {
+  return(extract_normal_anomaly_card(credit_card_data))
 }
 
-clusters_count = 200
-nu = 0.05
-gamma = 0.2
+clusters_count <- seq(10, 10, 1000)
+samples <- 10

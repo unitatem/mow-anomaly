@@ -1,6 +1,3 @@
-library(RANN)
-library(cluster)
-
 normalize <- function(data, max, min) {
   data <- sweep(data, 2, min)
   data <- sweep(data, 2, max-min, "/")
